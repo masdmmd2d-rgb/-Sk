@@ -60,7 +60,6 @@
             gap: 20px;
         }
 
-        /* Квадраты под иконки с фиксированным фоном в стиле Stalcraft */
         .card-icon-box {
             width: 52px;
             height: 52px;
@@ -193,11 +192,10 @@
 <body>
 
     <div class="header-panel">
-        <div class="header-title">📋 Расходы и доходы</div>
+        <div class="header-title">💼 Расходы и доходы</div>
         <button class="add-op-btn" onclick="toggleForm()">+ Добавить операцию</button>
     </div>
 
-    <!-- Исправленные блоки иконок с принудительными фонами -->
     <div class="stats">
         <div class="card">
             <div class="card-icon-box icon-spent">🛒</div>
@@ -215,7 +213,7 @@
 
     <div class="filters-panel">
         <div class="filter-item">
-            <label>🔍 Тип</label>
+            <label>🔍 Тип операции</label>
             <select id="filterType" onchange="render()">
                 <option value="Все">Все операции</option>
                 <option value="Покупка">Покупка</option>
@@ -259,42 +257,43 @@
         function toggleForm() {
             const form = document.getElementById('opForm');
             if (form) {
-                form.style.display = form.style.display === 'flex' ? 'none' : 'flex';
+                // Если форма скрыта или не имеет стиля - показываем, иначе скрываем
+                if (form.style.display === 'none' || form.style.display === '') {
+                    form.style.display = 'flex';
+                } else {
+                    form.style.display = 'none';
+                }
             }
         }
 
-        // Исправлено: калькулятор работает автономно без ошибок
+        // БЕЗОПАСНЫЙ КАЛЬКУЛЯТОР: защищен от зависаний при любых огромных числах
         function calculatePercent() {
-            const priceEl = document.getElementById('calcPrice');
-            const percentEl = document.getElementById('calcPercent');
-            const resultEl = document.getElementById('calcResult');
-            if (!priceEl || !percentEl || !resultEl) return;
+            try {
+                const priceValue = document.getElementById('calcPrice').value;
+                const percentValue = document.getElementById('calcPercent').value;
+                const resultEl = document.getElementById('calcResult');
+                
+                if (!resultEl) return;
 
-            const price = parseFloat(priceEl.value) || 0;
-            const percent = parseFloat(percentEl.value) || 0;
-            
-            if (price > 0) {
-                const discount = (price * Math.abs(percent)) / 100;
-                resultEl.innerText = `Итог: ${(price - discount).toLocaleString('ru-RU')} ₽ (скидка: -${discount.toLocaleString('ru-RU')} ₽)`;
-            } else { 
-                resultEl.innerText = 'Итог: 0 ₽'; 
+                const price = parseFloat(priceValue) || 0;
+                const percent = parseFloat(percentValue) || 0;
+                
+                if (price > 0) {
+                    const discount = (price * Math.abs(percent)) / 100;
+                    const total = price - discount;
+                    
+                    // Обрезаем до 2 знаков после запятой, чтобы не ломать Chromium округлениями
+                    resultEl.innerText = "Итог: " + total.toFixed(2) + " ₽ (скидка: -" + discount.toFixed(2) + " ₽)";
+                } else { 
+                    resultEl.innerText = 'Итог: 0 ₽'; 
+                }
+            } catch (err) {
+                console.error(err);
             }
         }
 
         function saveToStorage() { localStorage.setItem('accounting_items', JSON.stringify(items)); }
 
         function formatPrice(num) {
-            if (num >= 1000000000) return (num / 1000000000).toFixed(1) + ' млрд';
-            if (num >= 1000000) return (num / 1000000).toFixed(1) + ' млн';
-            if (num >= 1000) return (num / 1000).toFixed(1) + ' тыс.';
-            return num.toString();
-        }
-
-        function render() {
-            const tableBody = document.getElementById('table-body');
-            if (!tableBody) return;
-            tableBody.innerHTML = '';
-
-            let spent = 0, sold = 0;
-            const currentFilter = document.getElementById('filterType').value;
-
+            try {
+                if (num >= 1000000000) return (num / 1000000000).toFixed(1) + ' млрд';
