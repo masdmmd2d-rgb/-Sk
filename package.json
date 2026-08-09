@@ -1,5 +1,5 @@
 {
-  "name": "kaifarik-app",
+  "name": "my-accounting-app",
   "version": "1.0.0",
   "main": "main.js",
   "author": "User",
@@ -12,8 +12,8 @@
     "electron-builder": "^24.0.0"
   },
   "build": {
-    "appId": "com.kaifarik.app",
-    "productName": "Kaifarik",
+    "appId": "com.accounting.app",
+    "productName": "Учёт товаров",
     "win": {
       "target": "nsis"
     }
