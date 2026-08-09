@@ -1,23 +1,19 @@
 {
-  "name": "Furbik 3.0",
+  "name": "kaifarik-app",
   "version": "1.0.0",
   "main": "main.js",
   "author": "User",
   "description": "Учет товаров",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com"
-  },
-  "homepage": "https://github.com",
   "scripts": {
     "build": "electron-builder"
   },
   "devDependencies": {
-    "electron": "30.0.0",
-    "electron-builder": "24.13.3"
+    "electron": "28.2.0",
+    "electron-builder": "24.9.1"
   },
   "build": {
-    "appId": "com.accounting.app",
+    "appId": "com.kaifarik.app",
+    "productName": "Kaifarik",
     "win": {
       "target": "nsis"
     },
