@@ -8,17 +8,13 @@
     "build": "electron-builder"
   },
   "devDependencies": {
-    "electron": "28.2.0",
-    "electron-builder": "24.9.1"
+    "electron": "30.0.0",
+    "electron-builder": "24.13.3"
   },
   "build": {
     "appId": "com.accounting.app",
-    "productName": "Учёт товаров",
     "win": {
       "target": "nsis"
-    },
-    "directories": {
-      "output": "dist"
     }
   }
 }
