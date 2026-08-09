@@ -86,7 +86,7 @@
         button.backup-btn { background: #34495e; }
         button.backup-btn:hover { background: #2c3e50; }
 
-        button.delete-btn { 
+        .delete-btn { 
             background: rgba(231, 76, 60, 0.1); 
             border: 1px solid #e74c3c;
             color: #e74c3c;
@@ -128,9 +128,9 @@
         <div class="calc-card">
             <div class="calc-title">Калькулятор % (Скидка)</div>
             <div class="calc-inputs">
-                <input type="number" id="calcPrice" placeholder="Цена" oninput="calculatePercent()">
+                <input type="number" id="calcPrice" placeholder="Цена">
                 <span>-</span>
-                <input type="number" id="calcPercent" placeholder="%" oninput="calculatePercent()">
+                <input type="number" id="calcPercent" placeholder="%">
                 <span>%</span>
             </div>
             <div class="calc-result" id="calcResult">Итог: 0 ₽</div>
@@ -145,13 +145,13 @@
                 <option value="Покупка">Покупка</option>
                 <option value="Продажа">Продажа</option>
             </select>
-            <button onclick="addItem()">Добавить</button>
+            <button id="addBtn">Добавить</button>
         </div>
 
         <div class="backup-group">
-            <button class="backup-btn" onclick="downloadBackup()">Скачать копию</button>
-            <button class="backup-btn" onclick="document.getElementById('backupFileInput').click()">Загрузить копию</button>
-            <input type="file" id="backupFileInput" accept=".json" onchange="uploadBackup(event)">
+            <button class="backup-btn" id="downloadBtn">Скачать копию</button>
+            <button class="backup-btn" id="uploadBtn">Загрузить копию</button>
+            <input type="file" id="backupFileInput" accept=".json">
         </div>
     </div>
 
@@ -173,17 +173,24 @@
     </div>
 
     <script>
+        // Полностью безопасное чтение и сброс поврежденной памяти
         let items = [];
         try {
             const savedData = localStorage.getItem('accounting_items');
             if (savedData) {
-                items = JSON.parse(savedData) || [];
+                const parsed = JSON.parse(savedData);
+                if (Array.isArray(parsed)) {
+                    items = parsed;
+                } else {
+                    localStorage.removeItem('accounting_items');
+                }
             }
         } catch (e) {
             items = [];
+            localStorage.setItem('accounting_items', '[]');
         }
 
-        // Переписано на чистую математику без конфликтующих методов форматирования
+        // Защищенный калькулятор без inline-атрибутов
         function calculatePercent() {
             const priceVal = document.getElementById('calcPrice').value;
             const percentVal = document.getElementById('calcPercent').value;
@@ -197,11 +204,15 @@
             if (price > 0) {
                 const discount = (price * Math.abs(percent)) / 100;
                 const total = price - discount;
-                resultEl.innerText = "Итог: " + total.toFixed(0) + " ₽";
+                resultEl.innerText = "Итог: " + Math.round(total) + " ₽";
             } else {
                 resultEl.innerText = 'Итог: 0 ₽';
             }
         }
+
+        // Привязываем события калькулятора через слушатели
+        document.getElementById('calcPrice').addEventListener('input', calculatePercent);
+        document.getElementById('calcPercent').addEventListener('input', calculatePercent);
 
         function saveToStorage() {
             localStorage.setItem('accounting_items', JSON.stringify(items));
@@ -221,67 +232,53 @@
                 if (item.type === 'Покупка') spent += item.price;
                 else sold += item.price;
 
-                tableBody.innerHTML += `
-                    <tr>
-                        <td>${item.name || ''}</td>
-                        <td class="${item.type === 'Покупка' ? 'type-purchase' : 'type-sale'}">${item.type || ''}</td>
-                        <td style="color: #888; font-size: 14px;">${item.time || ''}</td>
-                        <td>${item.price.toFixed(0)} ₽</td>
-                        <td>
-                            <button class="delete-btn" onclick="deleteItem(${item.id})">Удалить</button>
-                        </td>
-                    </tr>
-                `;
+                // Создаем строку таблицы
+                const tr = document.createElement('tr');
+
+                // Заполняем ячейки текстом
+                const tdName = document.createElement('td');
+                tdName.textContent = item.name || '';
+                tr.appendChild(tdName);
+
+                const tdType = document.createElement('td');
+                tdType.textContent = item.type || '';
+                tdType.className = item.type === 'Покупка' ? 'type-purchase' : 'type-sale';
+                tr.appendChild(tdType);
+
+                const tdTime = document.createElement('td');
+                tdTime.textContent = item.time || '';
+                tdTime.style.color = '#888';
+                tdTime.style.fontSize = '14px';
+                tr.appendChild(tdTime);
+
+                const tdPrice = document.createElement('td');
+                tdPrice.textContent = Math.round(item.price) + " ₽";
+                tr.appendChild(tdPrice);
+
+                // Безопасное создание кнопки удаления с привязкой клика из JS
+                const tdActions = document.createElement('td');
+                const delBtn = document.createElement('button');
+                delBtn.textContent = 'Удалить';
+                delBtn.className = 'delete-btn';
+                delBtn.addEventListener('click', function() {
+                    deleteItem(item.id);
+                });
+                tdActions.appendChild(delBtn);
+                tr.appendChild(tdActions);
+
+                tableBody.appendChild(tr);
             });
 
-            document.getElementById('total-spent').innerText = spent.toFixed(0) + " ₽";
-            document.getElementById('total-sold').innerText = sold.toFixed(0) + " ₽";
+            document.getElementById('total-spent').innerText = Math.round(spent) + " ₽";
+            document.getElementById('total-sold').innerText = Math.round(sold) + " ₽";
             
             const profit = sold - spent;
             const profitEl = document.getElementById('total-profit');
             if (profitEl) {
-                profitEl.innerText = profit.toFixed(0) + " ₽";
+                profitEl.innerText = Math.round(profit) + " ₽";
                 profitEl.style.color = profit >= 0 ? '#2ecc71' : '#e74c3c';
             }
         }
 
-        function addItem() {
-            const nameInput = document.getElementById('itemName');
-            const priceInput = document.getElementById('itemPrice');
-            const typeSelect = document.getElementById('itemType');
-
-            if (!nameInput || !priceInput || !typeSelect) return;
-            if (!nameInput.value || !priceInput.value) {
-                alert('Заполните все поля!');
-                return;
-            }
-
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-            items.unshift({ 
-                id: Date.now(), 
-                name: nameInput.value,
-                price: parseFloat(priceInput.value) || 0,
-                type: typeSelect.value,
-                time: timeString
-            });
-
-            saveToStorage();
-            render();
-
-            nameInput.value = '';
-            priceInput.value = '';
-        }
-
-        window.deleteItem = function(id) {
-            items = items.filter(item => item && item.id !== id);
-            saveToStorage();
-            render();
-        }
-
-        function downloadBackup() {
-            if (items.length === 0) return alert('Таблица пуста!');
-            const blob = new Blob([JSON.stringify(items, null, 2)], { type: "application/json" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
+        // Привязываем клик кнопки «Добавить» напрямую
+        document.getElementById('addBtn').addEventListener('click', function() {
