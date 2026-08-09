@@ -8,17 +8,14 @@
     "build": "electron-builder"
   },
   "devDependencies": {
-    "electron": "28.2.0",
-    "electron-builder": "24.9.1"
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0"
   },
   "build": {
     "appId": "com.kaifarik.app",
     "productName": "Kaifarik",
     "win": {
       "target": "nsis"
-    },
-    "directories": {
-      "output": "dist"
     }
   }
 }
