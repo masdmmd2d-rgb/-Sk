@@ -1,0 +1,20 @@
+{
+  "name": "my-accounting-app",
+  "version": "1.0.0",
+  "main": "main.js",
+  "author": "User",
+  "description": "Учет товаров",
+  "scripts": {
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "30.0.0",
+    "electron-builder": "24.13.3"
+  },
+  "build": {
+    "appId": "com.accounting.app",
+    "win": {
+      "target": "nsis"
+    }
+  }
+}
