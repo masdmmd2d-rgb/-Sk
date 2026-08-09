@@ -1,0 +1,24 @@
+### Файл 2: `package.json`
+*(Конфигурация, сообщающая GitHub, как собирать EXE-файл)*
+
+```json
+{
+  "name": "my-accounting-app",
+  "version": "1.0.0",
+  "main": "main.js",
+  "author": "User",
+  "description": "Учёт товаров",
+  "scripts": {
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.accounting.app",
+    "win": {
+      "target": "nsis"
+    }
+  }
+}
