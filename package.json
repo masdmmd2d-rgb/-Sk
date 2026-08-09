@@ -4,6 +4,11 @@
   "main": "main.js",
   "author": "User",
   "description": "Учет товаров",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com"
+  },
+  "homepage": "https://github.com",
   "scripts": {
     "build": "electron-builder"
   },
@@ -15,6 +20,9 @@
     "appId": "com.accounting.app",
     "win": {
       "target": "nsis"
+    },
+    "directories": {
+      "output": "dist"
     }
   }
 }
