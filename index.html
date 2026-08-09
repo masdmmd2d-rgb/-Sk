@@ -89,32 +89,104 @@
         .filter-item { display: flex; flex-direction: column; gap: 8px; }
         .filter-item label { font-size: 13px; color: #9ca3af; }
 
-        /* Стили выпадающих списков и полей */
-        select, input[type="text"], input[type="number"] { 
+        /* Базовые стили полей */
+        select, input[type="text"], input[type="number"], textarea { 
             background: #1a1e2d; 
             border: 1px solid #282f46; 
             color: #f1f2f6; 
-            padding: 10px 16px; 
+            padding: 12px 16px; 
             border-radius: 8px; 
             outline: none;
             font-size: 14px;
-            min-width: 180px;
-            transition: border-color 0.2s;
+            box-sizing: border-box;
+            font-family: inherit;
         }
-        select:focus, input:focus { border-color: #3b82f6; }
+        select:focus, input:focus, textarea:focus { border-color: #3b82f6; }
 
-        /* Окно добавления */
-        .form-popup {
+        /* СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА КАК НА СКРИНШОТЕ */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-window {
             background: #141722;
             border: 1px solid #1f2434;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
-            display: none;
-            gap: 12px;
-            flex-wrap: wrap;
-            align-items: center;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .modal-close-x {
+            cursor: pointer;
+            font-size: 20px;
+            color: #6b7280;
+            background: none;
+            border: none;
+        }
+        .modal-close-x:hover { color: #fff; }
+
+        .modal-block {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .modal-block label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-row-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            resize: none;
+        }
+        .hint-text {
+            font-size: 12px;
+            color: #4b5563;
+            margin-top: -4px;
+        }
+
+        .modal-submit-btn {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            margin-top: 10px;
+        }
+        .modal-submit-btn:hover { background-color: #2563eb; }
 
         /* История */
         .history-container {
@@ -156,11 +228,12 @@
         }
 
         .op-details { display: flex; flex-direction: column; gap: 4px; }
-        .op-name { font-weight: 600; font-size: 15px; color: #f1f2f6; }
+        .op-name { font-weight: 600; font-size: 15px; color: #f1f2f6; white-space: pre-line; }
         .op-time { font-size: 12px; color: #6b7280; }
 
         .op-right { display: flex; align-items: center; gap: 24px; }
-        .op-amount { font-size: 16px; font-weight: 700; }
+        .op-amount { font-size: 16px; font-weight: 700; text-align: right; }
+        .op-subtext { font-size: 11px; color: #6b7280; font-weight: normal; margin-top: 2px; }
         
         .row-purchase .op-icon { background: rgba(239, 68, 68, 0.15); }
         .row-purchase .op-amount { color: #ef4444; }
@@ -193,7 +266,7 @@
 
     <div class="header-panel">
         <div class="header-title">💼 Расходы и доходы</div>
-        <button class="add-op-btn" onclick="toggleForm()">+ Добавить операцию</button>
+        <button class="add-op-btn" onclick="openModal()">+ Добавить операцию</button>
     </div>
 
     <div class="stats">
@@ -222,78 +295,28 @@
         </div>
     </div>
 
-    <div class="form-popup" id="opForm">
-        <input type="text" id="itemName" placeholder="Название предмета">
-        <input type="number" id="itemPrice" placeholder="Сумма (₽)">
-        <select id="itemType">
-            <option value="Покупка">Покупка</option>
-            <option value="Продажа">Продажа</option>
-        </select>
-        <button onclick="addItem()">Добавить</button>
-    </div>
+    <!-- НОВОЕ КРАСИВОЕ МОДАЛЬНОЕ ОКНО ИЗ СКРИНШОТА -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal-window">
+            <div class="modal-header">
+                <div><span>➕</span> Добавить операцию</div>
+                <button class="modal-close-x" onclick="closeModal()">×</button>
+            </div>
 
-    <div class="history-container">
-        <div class="history-title">📊 История операций</div>
-        <div class="op-list" id="table-body"></div>
-    </div>
+            <div class="modal-block">
+                <label><span>📝</span> Описание операции</label>
+                <textarea id="itemDesc" placeholder="Зимние коробы х100 штук&#10;Куплено на Свалке&#10;Для перепродажи"></textarea>
+                <div class="hint-text">Опишите операцию подробно (можно в несколько строк)</div>
+            </div>
 
-    <div class="calc-section">
-        <div style="font-size:14px; color:#9ca3af; margin-bottom:12px; font-weight:600;">Быстрый калькулятор % скидки</div>
-        <div style="display:flex; gap:10px; align-items:center;">
-            <input type="number" id="calcPrice" placeholder="Цена" oninput="calculatePercent()">
-            <span>-</span>
-            <input type="number" id="calcPercent" placeholder="%" oninput="calculatePercent()">
-            <div id="calcResult" style="margin-left:20px; font-weight:bold; color:#ef4444;">Итог: 0 ₽</div>
-        </div>
-    </div>
+            <div class="modal-block">
+                <label><span>🔄</span> Тип операции</label>
+                <select id="itemType" style="width: 100%;">
+                    <option value="Покупка">Покупка</option>
+                    <option value="Продажа">Продажа</option>
+                </select>
+            </div>
 
-    <script>
-        let items = [];
-        try {
-            const savedData = localStorage.getItem('accounting_items');
-            if (savedData) { items = JSON.parse(savedData) || []; }
-        } catch (e) { items = []; }
-
-        function toggleForm() {
-            const form = document.getElementById('opForm');
-            if (form) {
-                // Если форма скрыта или не имеет стиля - показываем, иначе скрываем
-                if (form.style.display === 'none' || form.style.display === '') {
-                    form.style.display = 'flex';
-                } else {
-                    form.style.display = 'none';
-                }
-            }
-        }
-
-        // БЕЗОПАСНЫЙ КАЛЬКУЛЯТОР: защищен от зависаний при любых огромных числах
-        function calculatePercent() {
-            try {
-                const priceValue = document.getElementById('calcPrice').value;
-                const percentValue = document.getElementById('calcPercent').value;
-                const resultEl = document.getElementById('calcResult');
-                
-                if (!resultEl) return;
-
-                const price = parseFloat(priceValue) || 0;
-                const percent = parseFloat(percentValue) || 0;
-                
-                if (price > 0) {
-                    const discount = (price * Math.abs(percent)) / 100;
-                    const total = price - discount;
-                    
-                    // Обрезаем до 2 знаков после запятой, чтобы не ломать Chromium округлениями
-                    resultEl.innerText = "Итог: " + total.toFixed(2) + " ₽ (скидка: -" + discount.toFixed(2) + " ₽)";
-                } else { 
-                    resultEl.innerText = 'Итог: 0 ₽'; 
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        function saveToStorage() { localStorage.setItem('accounting_items', JSON.stringify(items)); }
-
-        function formatPrice(num) {
-            try {
-                if (num >= 1000000000) return (num / 1000000000).toFixed(1) + ' млрд';
+            <div class="modal-row-inputs">
+                <div class="modal-block">
+                    <label><span>📦</span> Количество</label>
