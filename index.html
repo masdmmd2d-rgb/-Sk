@@ -183,16 +183,23 @@
             items = [];
         }
 
+        // Переписано на чистую математику без конфликтующих методов форматирования
         function calculatePercent() {
-            const price = parseFloat(document.getElementById('calcPrice').value) || 0;
-            const percent = parseFloat(document.getElementById('calcPercent').value) || 0;
+            const priceVal = document.getElementById('calcPrice').value;
+            const percentVal = document.getElementById('calcPercent').value;
+            const resultEl = document.getElementById('calcResult');
+            
+            if (!resultEl) return;
+
+            const price = parseFloat(priceVal) || 0;
+            const percent = parseFloat(percentVal) || 0;
             
             if (price > 0) {
                 const discount = (price * Math.abs(percent)) / 100;
                 const total = price - discount;
-                document.getElementById('calcResult').innerText = `Итог: ${total.toLocaleString('ru-RU')} ₽`;
+                resultEl.innerText = "Итог: " + total.toFixed(0) + " ₽";
             } else {
-                document.getElementById('calcResult').innerText = 'Итог: 0 ₽';
+                resultEl.innerText = 'Итог: 0 ₽';
             }
         }
 
@@ -219,7 +226,7 @@
                         <td>${item.name || ''}</td>
                         <td class="${item.type === 'Покупка' ? 'type-purchase' : 'type-sale'}">${item.type || ''}</td>
                         <td style="color: #888; font-size: 14px;">${item.time || ''}</td>
-                        <td>${item.price.toLocaleString('ru-RU')} ₽</td>
+                        <td>${item.price.toFixed(0)} ₽</td>
                         <td>
                             <button class="delete-btn" onclick="deleteItem(${item.id})">Удалить</button>
                         </td>
@@ -227,13 +234,13 @@
                 `;
             });
 
-            document.getElementById('total-spent').innerText = `${spent.toLocaleString('ru-RU')} ₽`;
-            document.getElementById('total-sold').innerText = `${sold.toLocaleString('ru-RU')} ₽`;
+            document.getElementById('total-spent').innerText = spent.toFixed(0) + " ₽";
+            document.getElementById('total-sold').innerText = sold.toFixed(0) + " ₽";
             
             const profit = sold - spent;
             const profitEl = document.getElementById('total-profit');
             if (profitEl) {
-                profitEl.innerText = `${profit.toLocaleString('ru-RU')} ₽`;
+                profitEl.innerText = profit.toFixed(0) + " ₽";
                 profitEl.style.color = profit >= 0 ? '#2ecc71' : '#e74c3c';
             }
         }
@@ -243,6 +250,7 @@
             const priceInput = document.getElementById('itemPrice');
             const typeSelect = document.getElementById('itemType');
 
+            if (!nameInput || !priceInput || !typeSelect) return;
             if (!nameInput.value || !priceInput.value) {
                 alert('Заполните все поля!');
                 return;
@@ -251,10 +259,10 @@
             const now = new Date();
             const timeString = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-            items.unshift({ // unshift добавляет новые операции наверх списка
+            items.unshift({ 
                 id: Date.now(), 
                 name: nameInput.value,
-                price: parseFloat(priceInput.value),
+                price: parseFloat(priceInput.value) || 0,
                 type: typeSelect.value,
                 time: timeString
             });
@@ -277,9 +285,3 @@
             const blob = new Blob([JSON.stringify(items, null, 2)], { type: "application/json" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = "uchet_tovarov_backup.json";
-            link.click();
-        }
-
-        function uploadBackup(event) {
-            const file = event.target.files;
