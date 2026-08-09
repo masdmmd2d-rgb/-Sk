@@ -104,7 +104,7 @@
         .filter-item { display: flex; flex-direction: column; gap: 8px; }
         .filter-item label { font-size: 13px; color: #9ca3af; display: flex; align-items: center; gap: 6px; }
 
-        /* Красивые кастомные выпадающие списки (ползунки выбора) */
+        /* Красивые кастомные выпадающие списки */
         select, input[type="text"], input[type="number"] { 
             background: #1a1e2d; 
             border: 1px solid #282f46; 
@@ -122,7 +122,7 @@
             box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
         }
 
-        /* Форма добавления, скрытая по умолчанию для аккуратности */
+        /* Форма добавления */
         .form-popup {
             background: #141722;
             border: 1px solid #1f2434;
@@ -153,7 +153,7 @@
             color: #f1f2f6;
         }
 
-        /* Строки списка (как плашки на скриншоте) */
+        /* Строки списка */
         .op-list { display: flex; flex-direction: column; gap: 12px; }
         
         .op-row {
@@ -197,7 +197,7 @@
         .row-sale .op-icon { color: #10b981; background: rgba(16, 185, 129, 0.1); }
         .row-sale .op-amount { color: #10b981; }
 
-        /* Кнопка удаления-урны */
+        /* Кнопка удаления */
         .trash-btn {
             background: none;
             border: none;
@@ -209,7 +209,7 @@
         }
         .trash-btn:hover { color: #ef4444; }
 
-        /* Калькулятор вынесен в отдельный блок */
+        /* Калькулятор */
         .calc-section {
             background: #141722;
             border: 1px solid #1f2434;
@@ -224,14 +224,14 @@
     <!-- Верхняя шапка -->
     <div class="header-panel">
         <div class="header-title">
-            <i class="fa-solid : ffa-wallet"></i> Расходы и доходы
+            <i class="fa-solid fa-wallet"></i> Расходы и доходы
         </div>
         <button class="add-op-btn" onclick="toggleForm()">
             <i class="fa-solid fa-plus"></i> Добавить операцию
         </button>
     </div>
 
-    <!-- Карточки статистики с новыми красивыми Stalcraft-иконками -->
+    <!-- Карточки статистики -->
     <div class="stats">
         <div class="card">
             <div class="card-icon-box icon-spent"><i class="fa-solid fa-cart-shopping"></i></div>
@@ -247,7 +247,7 @@
         </div>
     </div>
 
-    <!-- Панель красивых фильтров (как на скрине) -->
+    <!-- Панель фильтров -->
     <div class="filters-panel">
         <div class="filter-item">
             <label><i class="fa-solid fa-filter"></i> Тип</label>
@@ -259,7 +259,7 @@
         </div>
     </div>
 
-    <!-- Всплывающая форма добавления новой операции -->
+    <!-- Форма добавления -->
     <div class="form-popup" id="opForm">
         <input type="text" id="itemName" placeholder="Название предмета/чертежа">
         <input type="number" id="itemPrice" placeholder="Сумма (₽)">
@@ -270,17 +270,17 @@
         <button onclick="addItem()">Добавить</button>
     </div>
 
-    <!-- Новая история операций в виде плашек списком -->
+    <!-- История операций -->
     <div class="history-container">
         <div class="history-title">
             <i class="fa-solid fa-list-ul"></i> История операций
         </div>
         <div class="op-list" id="table-body">
-            <!-- Сюда добавляются строки программно -->
+            <!-- Строки добавляются через JS -->
         </div>
     </div>
 
-    <!-- Калькулятор % скидки -->
+    <!-- Калькулятор -->
     <div class="calc-section">
         <div class="calc-title" style="font-size:14px; color:#9ca3af; margin-bottom:12px; font-weight:600;">Быстрый калькулятор % скидки</div>
         <div style="display:flex; gap:10px; align-items:center;">
@@ -295,3 +295,11 @@
         let items = [];
         try {
             const savedData = localStorage.getItem('accounting_items');
+            if (savedData) { items = JSON.parse(savedData) || []; }
+        } catch (e) { items = []; }
+
+        function toggleForm() {
+            const form = document.getElementById('opForm');
+            form.style.display = form.style.display === 'flex' ? 'none' : 'flex';
+        }
+
